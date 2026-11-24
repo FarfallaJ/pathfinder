@@ -70,3 +70,13 @@ def test_reputation_signals_drive_verdict():
     codes = {x["code"] for x in sigs}
     assert "gsb-listed" in codes and "phishtank-verified" in codes
     assert v == "phishing" and s >= 60
+
+
+def test_authoritative_hit_floors_verdict():
+    # GSB hit alone scores 35 (< 60), but an authoritative hit must read phishing.
+    a = {"url": {}, "infra": {}, "brand": {}, "typosquat": {}, "render": {},
+         "email": {}, "reputation": {
+             "safe_browsing": {"listed": True, "threat_types": ["SOCIAL_ENGINEERING"]},
+             "phishtank": {"in_database": False}}}
+    s, v, _ = score.compute(a)
+    assert s < 60 and v == "phishing"

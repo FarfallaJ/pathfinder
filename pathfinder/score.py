@@ -103,6 +103,11 @@ def compute(analysis: dict) -> tuple[int, str, list[dict]]:
         verdict = "likely-benign"
     else:
         verdict = "inconclusive"
+
+    # Authoritative blocklist confirmation floors the verdict at phishing,
+    # regardless of the heuristic score. Certainty overrides heuristics.
+    if gsb.get("listed") or (pt.get("in_database") and pt.get("verified")):
+        verdict = "phishing"
     return score, verdict, signals
 
 
