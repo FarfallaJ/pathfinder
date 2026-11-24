@@ -4,25 +4,18 @@ Submits the URL for a fresh scan and returns a screenshot URL, urlscan's own
 verdict, the resolved page URL, and observed IPs. Degrades to None without a key.
 """
 from __future__ import annotations
-import os
 import time
 
 import requests
+
+from . import config
 
 _SUBMIT = "https://urlscan.io/api/v1/scan/"
 _RESULT = "https://urlscan.io/api/v1/result/{uuid}/"
 
 
 def _key() -> str | None:
-    # Reuse Station's loader if present so one .env serves both tools.
-    try:
-        from ioc_enrich.config import get_key
-        k = get_key("urlscan")
-        if k:
-            return k
-    except Exception:  # noqa: BLE001
-        pass
-    return os.environ.get("URLSCAN_API_KEY") or None
+    return config.get_key("urlscan")
 
 
 def scan(url: str, visibility: str = "unlisted", timeout: int = 60) -> dict | None:

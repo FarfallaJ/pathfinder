@@ -2,7 +2,8 @@
 from __future__ import annotations
 from urllib.parse import urlparse
 
-from . import urltools, redirect, infra, brand, typosquat, render, emailmsg, iocs, score, station
+from . import (urltools, redirect, infra, brand, typosquat, render, emailmsg,
+               iocs, score, station, safebrowsing, phishtank)
 
 
 def analyze_url(url: str, do_render: bool = False, do_enrich: bool = False) -> dict:
@@ -38,6 +39,10 @@ def analyze_url(url: str, do_render: bool = False, do_enrich: bool = False) -> d
         "brand": page,
         "typosquat": typo,
         "render": rnd,
+        "reputation": {
+            "safe_browsing": safebrowsing.check(final),
+            "phishtank": phishtank.check(final),
+        },
         "email": None,
     }
     analysis["iocs"] = iocs.extract(analysis)
@@ -59,9 +64,9 @@ def analyze_email(raw: bytes, do_render: bool = False, do_enrich: bool = False) 
     if em.get("urls"):
         link = analyze_url(em["urls"][0], do_render=do_render, do_enrich=False)
         analysis["link_analysis"] = link
-        # Lift the link's URL/infra/brand/typosquat up for scoring context.
-        for k in ("url", "infra", "brand", "typosquat", "render"):
-            analysis[k] = link.get(k) or analysis[k]
+        # Lift the link's analysis up for scoring context.
+        for k in ("url", "infra", "brand", "typosquat", "render", "reputation"):
+            analysis[k] = link.get(k) or analysis.get(k)
     analysis["iocs"] = iocs.extract(analysis)
     if analysis.get("link_analysis"):
         for extra in analysis["link_analysis"].get("iocs", []):

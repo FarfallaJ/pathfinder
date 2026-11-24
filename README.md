@@ -21,6 +21,9 @@ reputation and attribution.
   subdomain, homoglyph substitutions, and punycode/IDN homographs.
 - **Page signals** — credential (password) form detection and brand impersonation
   in the page title/content.
+- **Reputation blocklists** — checks the final URL against **Google Safe Browsing**
+  (authoritative phishing/malware verdict) and **PhishTank**; a hit near-confirms
+  the verdict.
 - **Infrastructure** — domain age (RDAP), TLS certificate issuer/SAN, resolved IPs.
 - **Email (.eml)** — From / Reply-To / Return-Path analysis, SPF/DKIM/DMARC
   results, display-name spoofing, body URLs, and attachment hashes.
@@ -74,14 +77,22 @@ you to enrich elsewhere.
 
 ## Configuration
 
-Only the optional urlscan render needs a key. Pathfinder reuses Station's key
-loader if present, or reads `URLSCAN_API_KEY` from the environment / a `.env`.
-See `.env.example`.
+All keys are optional — Pathfinder degrades cleanly without them. Copy
+`.env.example` to `.env` and fill what you have:
+
+- **`GSB_API_KEY`** — Google Safe Browsing v4 (free, non-commercial). In the
+  Google Cloud Console: create a project, enable the **Safe Browsing API**, and
+  create an API key. This unlocks the strongest signal.
+- **`PHISHTANK_API_KEY`** — optional; PhishTank works anonymously (rate-limited)
+  and a key raises the limit.
+- **`URLSCAN_API_KEY`** — only for the `--render` screenshot.
+
+Pathfinder reuses Station's key loader too, so one `.env` can serve both tools.
 
 ## Testing
 
 ```bash
-python -m pytest        # 26 tests, network mocked (no keys or network needed)
+python -m pytest        # 33 tests, network mocked (no keys or network needed)
 ```
 
 ## Disclaimer

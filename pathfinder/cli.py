@@ -37,6 +37,27 @@ def _render_text(a: dict) -> str:
         L.append(f"From:   {em.get('from')}  (domain {em.get('from_domain')})")
         L.append(f"Subject: {em.get('subject')}")
         L.append(f"Auth:   SPF={em.get('spf')} DKIM={em.get('dkim')} DMARC={em.get('dmarc')}")
+
+    rep = a.get("reputation") or {}
+    if rep:
+        gsb = rep.get("safe_browsing", {}) or {}
+        pt = rep.get("phishtank", {}) or {}
+        L.append("")
+        L.append("Reputation:")
+        if not gsb.get("configured"):
+            L.append("  Safe Browsing: (no GSB_API_KEY set)")
+        elif gsb.get("listed"):
+            L.append("  Safe Browsing: 🔴 LISTED — " + ", ".join(gsb.get("threat_types") or []))
+        else:
+            L.append(f"  Safe Browsing: not listed{' (' + gsb['error'] + ')' if gsb.get('error') else ''}")
+        if pt.get("rate_limited"):
+            L.append("  PhishTank: rate-limited (anonymous)")
+        elif pt.get("in_database"):
+            L.append(f"  PhishTank: 🔴 in database"
+                     f"{' (verified)' if pt.get('verified') else ' (unverified)'}"
+                     f"{' — ' + pt['detail_url'] if pt.get('detail_url') else ''}")
+        else:
+            L.append("  PhishTank: not listed")
     L.append("")
     L.append("Signals:")
     if a.get("signals"):

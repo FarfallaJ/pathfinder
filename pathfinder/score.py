@@ -19,6 +19,21 @@ def compute(analysis: dict) -> tuple[int, str, list[dict]]:
     typo = analysis.get("typosquat") or {}
     render = analysis.get("render") or {}
     email = analysis.get("email") or {}
+    rep = analysis.get("reputation") or {}
+
+    # Authoritative blocklist hits (strongest signals).
+    gsb = rep.get("safe_browsing") or {}
+    if gsb.get("listed"):
+        tt = ", ".join(gsb.get("threat_types") or []) or "listed"
+        _sig(signals, "gsb-listed", 35, "high",
+             f"Google Safe Browsing flagged it ({tt})")
+    pt = rep.get("phishtank") or {}
+    if pt.get("in_database") and pt.get("verified"):
+        _sig(signals, "phishtank-verified", 35, "high",
+             f"PhishTank verified phish (id {pt.get('phish_id')})")
+    elif pt.get("in_database"):
+        _sig(signals, "phishtank-listed", 15, "medium",
+             "Listed in PhishTank (unverified)")
 
     age = infra.get("domain_age_days")
     if age is not None and age < 7:

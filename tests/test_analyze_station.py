@@ -21,6 +21,10 @@ def test_analyze_url_flags_phishing(monkeypatch):
     monkeypatch.setattr(analyze.infra, "resolve", lambda h: ["45.33.1.1"])
     monkeypatch.setattr(analyze.infra, "domain_age", lambda d: 2)
     monkeypatch.setattr(analyze.infra, "tls_cert", lambda h: {"issuer": "Let's Encrypt"})
+    monkeypatch.setattr(analyze.safebrowsing, "check",
+                        lambda u: {"configured": True, "listed": False})
+    monkeypatch.setattr(analyze.phishtank, "check",
+                        lambda u: {"in_database": False})
 
     a = analyze.analyze_url("hxxps://bit[.]ly/x")
     assert a["verdict"] == "phishing"
