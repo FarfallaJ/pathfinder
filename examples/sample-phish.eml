@@ -1,0 +1,16 @@
+From: "Microsoft Account Team" <security@secure-microsft-verify.tk>
+Reply-To: collect@mail-harvest.ru
+Return-Path: <bounce@secure-microsft-verify.tk>
+To: victim@example.com
+Subject: Unusual sign-in activity on your account
+Date: Mon, 24 Nov 2026 09:14:00 +0000
+Authentication-Results: mx.example.com; spf=fail smtp.mailfrom=secure-microsft-verify.tk; dkim=fail header.d=secure-microsft-verify.tk; dmarc=fail
+Received: from mail-harvest.ru (mail-harvest.ru [45.146.165.37]) by mx.example.com with ESMTPS
+Content-Type: text/plain; charset="utf-8"
+
+We detected an unusual sign-in to your Microsoft account.
+
+Verify your identity now to avoid suspension:
+http://secure-microsft-verify.tk/login?id=90a21
+
+Microsoft Account Team
