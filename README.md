@@ -109,10 +109,26 @@ Then `--browser` gives a screenshot, the JS-executed final URL, dynamic-form
 detection, and cloaking. It executes page JavaScript in sandboxed headless
 Chromium — still, analyze genuinely hostile URLs from an isolated environment.
 
+## MCP server
+
+Pathfinder ships an MCP server so an assistant (Claude Desktop, IDEs, agents)
+can drive it as native tools — and, with `enrich=True`, chain straight into
+Station in one call.
+
+```bash
+pip install -e ".[mcp]"
+pathfinder-mcp            # stdio transport
+```
+
+Tools: `analyze_url`, `analyze_email`, `check_reputation`. Each `analyze_*` tool
+takes `render` / `browser` / `enrich` flags, so a client can say "analyze this
+URL in a real browser and enrich what you find" and get Pathfinder's analysis
+and Station's reputation/attribution in a single response.
+
 ## Testing
 
 ```bash
-python -m pytest        # 38 tests, network mocked (no keys or network needed)
+python -m pytest        # 42 tests, network mocked (no keys or network needed)
 ```
 
 ## Disclaimer

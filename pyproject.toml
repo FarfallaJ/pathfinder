@@ -27,7 +27,8 @@ dependencies = [
 
 [project.optional-dependencies]
 browser = ["playwright>=1.40"]
-dev = ["pytest>=7.0"]
+mcp = ["mcp>=1.2.0"]
+dev = ["pytest>=7.0", "mcp>=1.2.0"]
 
 [project.urls]
 Homepage = "https://github.com/FarfallaJ/pathfinder"
@@ -35,6 +36,7 @@ Repository = "https://github.com/FarfallaJ/pathfinder"
 
 [project.scripts]
 pathfinder = "pathfinder.cli:main"
+pathfinder-mcp = "pathfinder.mcp_server:main"
 
 [tool.setuptools.dynamic]
 version = { attr = "pathfinder.__version__" }
