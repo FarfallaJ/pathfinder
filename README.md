@@ -27,8 +27,12 @@ reputation and attribution.
 - **Infrastructure** — domain age (RDAP), TLS certificate issuer/SAN, resolved IPs.
 - **Email (.eml)** — From / Reply-To / Return-Path analysis, SPF/DKIM/DMARC
   results, display-name spoofing, body URLs, and attachment hashes.
-- **Optional render** — submit the URL to urlscan.io for a screenshot and verdict
-  (reuses the `URLSCAN_API_KEY` you already set for Station).
+- **Headless render (keyless)** — with `--browser`, render the page in headless
+  Chromium (Playwright): a screenshot, the *JavaScript-executed* final URL,
+  dynamically-rendered login forms the static fetch misses, and **cloaking
+  detection** (when the browser lands somewhere different than the static fetch).
+- **urlscan render** — alternatively, `--render` submits to urlscan.io for a
+  screenshot + verdict (reuses the `URLSCAN_API_KEY` you set for Station).
 - **Weighted verdict** — a 0–100 phishing score with the signals that fired.
 
 ## Quick start
@@ -39,7 +43,10 @@ pip install -e .
 # Analyze a URL
 pathfinder "hxxps://paypal-secure-login[.]tk/signin"
 
-# Add a urlscan screenshot + verdict (needs URLSCAN_API_KEY)
+# Keyless headless render: screenshot, JS redirects, dynamic forms, cloaking
+pathfinder https://suspicious.example/login --browser
+
+# Or a urlscan screenshot + verdict (needs URLSCAN_API_KEY)
 pathfinder https://suspicious.example/login --render
 
 # Analyze an email
@@ -89,10 +96,23 @@ All keys are optional — Pathfinder degrades cleanly without them. Copy
 
 Pathfinder reuses Station's key loader too, so one `.env` can serve both tools.
 
+## Headless render (optional)
+
+The `--browser` render is keyless but needs Playwright and a Chromium binary:
+
+```bash
+pip install -e ".[browser]"
+playwright install chromium
+```
+
+Then `--browser` gives a screenshot, the JS-executed final URL, dynamic-form
+detection, and cloaking. It executes page JavaScript in sandboxed headless
+Chromium — still, analyze genuinely hostile URLs from an isolated environment.
+
 ## Testing
 
 ```bash
-python -m pytest        # 33 tests, network mocked (no keys or network needed)
+python -m pytest        # 38 tests, network mocked (no keys or network needed)
 ```
 
 ## Disclaimer

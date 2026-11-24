@@ -1,6 +1,9 @@
 # Secrets — never commit
 .env
 
+# Pathfinder browser screenshots
+pathfinder_*.png
+
 # Python
 __pycache__/
 *.py[cod]

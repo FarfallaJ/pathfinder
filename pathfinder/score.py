@@ -58,6 +58,12 @@ def compute(analysis: dict) -> tuple[int, str, list[dict]]:
         _sig(signals, "brand-impersonation", 20, "high",
              "Page content impersonates: " + ", ".join(brand["impersonates"]))
 
+    br = analysis.get("browser") or {}
+    if br.get("cloaking"):
+        _sig(signals, "cloaking", 18, "high",
+             "Headless browser landed on a different domain than the static "
+             "fetch — cloaking / evasion")
+
     hops = url.get("hops") or 0
     if hops > 3:
         _sig(signals, "long-redirect-chain", 10, "medium",

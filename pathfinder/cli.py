@@ -58,6 +58,23 @@ def _render_text(a: dict) -> str:
                      f"{' — ' + pt['detail_url'] if pt.get('detail_url') else ''}")
         else:
             L.append("  PhishTank: not listed")
+
+    br = a.get("browser") or {}
+    if br:
+        L.append("")
+        L.append("Headless render (Playwright):")
+        if not br.get("available"):
+            L.append("  " + br.get("note", "unavailable"))
+        elif br.get("error"):
+            L.append(f"  render error: {br['error']}")
+        else:
+            L.append(f"  Browser final URL: {br.get('final_url')}")
+            if br.get("js_redirect"):
+                L.append("  ⚠ JavaScript changed the URL after load")
+            if br.get("cloaking"):
+                L.append("  🔴 CLOAKING — browser landed on a different domain than the static fetch")
+            if br.get("screenshot_path"):
+                L.append(f"  Screenshot: {br['screenshot_path']}")
     L.append("")
     L.append("Signals:")
     if a.get("signals"):
@@ -92,6 +109,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--eml", help="path to an .eml email file to analyze instead")
     p.add_argument("--render", action="store_true",
                    help="submit the URL to urlscan.io for a screenshot + verdict (needs a key)")
+    p.add_argument("--browser", action="store_true",
+                   help="render in headless Chromium (keyless): screenshot, JS "
+                        "final URL, dynamic-form detection, cloaking (needs: "
+                        "pip install 'pathfinder-phish[browser]' && playwright install chromium)")
+    p.add_argument("--screenshot-dir", help="directory to save browser screenshots into")
     p.add_argument("--enrich", action="store_true",
                    help="enrich discovered indicators via Station (if installed)")
     p.add_argument("--json", action="store_true", help="emit JSON instead of text")
@@ -100,9 +122,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.eml:
         with open(args.eml, "rb") as f:
-            result = analyze_email(f.read(), do_render=args.render, do_enrich=args.enrich)
+            result = analyze_email(f.read(), do_render=args.render, do_enrich=args.enrich,
+                                   do_browser=args.browser, screenshot_dir=args.screenshot_dir)
     elif args.url:
-        result = analyze_url(args.url, do_render=args.render, do_enrich=args.enrich)
+        result = analyze_url(args.url, do_render=args.render, do_enrich=args.enrich,
+                             do_browser=args.browser, screenshot_dir=args.screenshot_dir)
     else:
         p.error("provide a URL or --eml FILE")
 
