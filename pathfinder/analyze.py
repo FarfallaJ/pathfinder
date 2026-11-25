@@ -44,6 +44,9 @@ def analyze_url(url: str, do_render: bool = False, do_enrich: bool = False,
             "shortener_in_chain": red["shortener_in_chain"],
             "cross_site_redirect": score.cross_site(red["redirect_chain"]),
             "fetch_error": red["error"],
+            # True only if the page actually loaded (static fetch or browser).
+            "reachable": bool(red.get("final_status"))
+            or bool(br and br.get("status")),
         },
         "infra": {
             "domain": typo["registrable"],

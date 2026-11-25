@@ -35,6 +35,14 @@ def compute(analysis: dict) -> tuple[int, str, list[dict]]:
         _sig(signals, "phishtank-listed", 15, "medium",
              "Listed in PhishTank (unverified)")
 
+    # Station enrichment of a discovered indicator came back malicious.
+    enr = analysis.get("enrichment") or {}
+    enr_malicious = any(x.get("verdict") == "malicious"
+                        for x in (enr.get("assessments") or []))
+    if enr_malicious:
+        _sig(signals, "enrichment-malicious", 35, "high",
+             "Station scored a discovered indicator malicious")
+
     age = infra.get("domain_age_days")
     if age is not None and age < 7:
         _sig(signals, "very-new-domain", 30, "high",
@@ -48,7 +56,7 @@ def compute(analysis: dict) -> tuple[int, str, list[dict]]:
              "Password/login form present on the landing page")
 
     if typo.get("is_lookalike"):
-        _sig(signals, "typosquat", 25, "high",
+        _sig(signals, "typosquat", 30, "high",
              f"Lookalike of {typo.get('nearest_brand') or 'a known brand'}: "
              f"{typo.get('technique')}")
     if typo.get("punycode"):
@@ -110,9 +118,15 @@ def compute(analysis: dict) -> tuple[int, str, list[dict]]:
     else:
         verdict = "inconclusive"
 
-    # Authoritative blocklist confirmation floors the verdict at phishing,
-    # regardless of the heuristic score. Certainty overrides heuristics.
-    if gsb.get("listed") or (pt.get("in_database") and pt.get("verified")):
+    # A page we couldn't load wasn't tested — absence of page signals is not
+    # evidence of safety, so never call an unreachable page "likely-benign".
+    if not url.get("reachable", True) and verdict == "likely-benign":
+        verdict = "inconclusive"
+
+    # Authoritative confirmation floors the verdict at phishing, regardless of
+    # the heuristic score — certainty overrides heuristics.
+    if (gsb.get("listed") or (pt.get("in_database") and pt.get("verified"))
+            or enr_malicious):
         verdict = "phishing"
     return score, verdict, signals
 

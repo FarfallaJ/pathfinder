@@ -32,6 +32,33 @@ def test_email_auth_failures_score():
     assert s >= 30 and v in ("suspicious", "phishing")
 
 
+def test_typosquat_alone_reaches_suspicious():
+    a = {"url": {"reachable": True}, "infra": {}, "brand": {},
+         "typosquat": {"is_lookalike": True, "nearest_brand": "paypal",
+                       "technique": "brand keyword in domain (combo-squat)"},
+         "render": {}, "email": {}}
+    s, v, _ = score.compute(a)
+    assert s == 30 and v == "suspicious"
+
+
+def test_unreachable_page_is_inconclusive_not_benign():
+    # one weak signal, but the page never loaded -> not "benign", it's untested
+    a = {"url": {"reachable": False, "shortener_in_chain": True},
+         "infra": {}, "brand": {}, "typosquat": {}, "render": {}, "email": {}}
+    s, v, _ = score.compute(a)
+    assert v == "inconclusive"
+
+
+def test_enrichment_malicious_floors_phishing():
+    a = {"url": {"reachable": False}, "infra": {}, "brand": {}, "typosquat": {},
+         "render": {}, "email": {},
+         "enrichment": {"available": True, "assessments": [
+             {"ioc": "paypal-secure-login.tk", "verdict": "malicious", "risk_score": 70}]}}
+    s, v, sigs = score.compute(a)
+    assert "enrichment-malicious" in {x["code"] for x in sigs}
+    assert v == "phishing"
+
+
 def test_cross_site_helper():
     chain = [{"url": "https://bit.ly/x"}, {"url": "https://evil.tld/y"}]
     assert score.cross_site(chain) is True
